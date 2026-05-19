@@ -1,0 +1,31 @@
+spring:
+  application:
+    name:
+  web:
+    error:
+      # trace 답변 추가하기
+      include-stacktrace:
+  # MYSQL 설정
+  datasource:
+    url:
+    username:
+    password:
+    driver-class-name:
+
+# MyBatis
+mybatis:
+  # MyBatis가 실행할 SQL 쿼리문(XML 파일)들이 어디에 있는지 위치를 지정하는 속성
+  mapper-locations:
+  # 패키지 경로 생략을 위한 별칭, 패키지에 포함된 클래스들을 마이바티스가 자동으로 스캔
+  type-aliases-package:
+
+# Log
+Logging:
+  # 로그 파일 경로
+  file:
+    name:
+  # 로그 출력 레벨 설정
+  level:
+    root:
+    # 특정 패키지만 로그 출력 레벨 설정
+    com.msa4meerkatgram.controllers:
