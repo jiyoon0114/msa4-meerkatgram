@@ -1,8 +1,10 @@
 package com.msa4meerkatgram.global.errors;
 
+import com.msa4meerkatgram.global.errors.custom.NotRegisteredException;
 import com.msa4meerkatgram.global.responses.GlobalRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,6 +18,16 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NotRegisteredException.class)
+    public ResponseEntity<GlobalRes<String>> notRegisteredException(NotRegisteredException e) {
+        return ResponseEntity.status(400).body(
+                GlobalRes.<String>builder()
+                        .code("E01")
+                        .messsage("로그인 에러")
+                        .data(e.getMessage())
+                        .build()
+        );
+    }
     // 클라이언트가 보낸 하나의 타입 파라미터가 미스 매치됐을때 실행됨
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<GlobalRes<String>> methodArgumentTypeMismatchHandle(MethodArgumentTypeMismatchException e) {
@@ -52,7 +64,7 @@ public class GlobalExceptionHandler {
                         // getAllErrors() return List<ObjectError>: BindingResult 안에 List<ObjectError>를 꺼냄
                         .getAllErrors()
                         .stream()
-                        .map(item -> String.format("%s : 잘못된 값입니다", e.getFieldError()))
+                        .map(ObjectError::getDefaultMessage)
                         .toList()
                 )
                 .build()
