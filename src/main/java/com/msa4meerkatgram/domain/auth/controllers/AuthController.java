@@ -1,8 +1,10 @@
 package com.msa4meerkatgram.domain.auth.controllers;
 
 import com.msa4meerkatgram.domain.auth.requsts.LoginReq;
+import com.msa4meerkatgram.domain.auth.responses.AuthRes;
 import com.msa4meerkatgram.domain.auth.services.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.msa4meerkatgram.global.responses.GlobalRes;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +20,17 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(
+    public ResponseEntity<GlobalRes<AuthRes>> login(
             @Valid @RequestBody LoginReq loginReq
             // Response할때 필요한 정보를 저장해 주는 객체
-            , HttpServletRequest request
+            , HttpServletResponse response
             ) {
-        authService.login(loginReq);
-        return ResponseEntity.status(200).body("test");
+        return ResponseEntity.status(200).body(
+                GlobalRes.<AuthRes>builder()
+                        .code("00")
+                        .messsage("로그인 완료")
+                        .data(authService.login(response, loginReq))
+                        .build()
+        );
     }
 }

@@ -17,6 +17,8 @@ public class JwtProvider {
 
     public JwtProvider(JwtConfig jwtConfig) {
         this.jwtConfig = jwtConfig;
+        // Decoders.BASE64.decode Base64인코딩된 문자열을 디코드해서 byte배열로 return
+        // return byte를 jwt 서명용 열쇠 객체로 만드는 과정
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtConfig.secret()));
     }
 
@@ -27,14 +29,14 @@ public class JwtProvider {
         return Jwts.builder()
                 .header()
                 .type(jwtConfig.type()) // 토큰 유형 설정
-                .and()// 추가 연결
+                .and()// header()호출 BuilderHeader -> payload 쓸 메서드 적어야함 -> and()로 JwtBuilder로 돌아가기
                 .subject(String.valueOf(user.getId())) // 유저를 특정하는 id 셋팅에 주로 사용
                 .issuer(jwtConfig.issuer()) // 토큰 발급자
                 .issuedAt(now) // 발급 시간
                 .expiration(new Date(now.getTime() + ttl)) // 만료시간
                 .claim("role", user.getRole()) // private claim 설정
-                .signWith(secretKey)
-                .compact();
+                .signWith(secretKey) // SecretKey로 JWT에 서명
+                .compact(); // JWT를 최종 문자열로 만든다 -> Header.Payload.Signature 형태로 만듦
     }
 
     public String generateAccessToken(User user) {
