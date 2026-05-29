@@ -6,13 +6,17 @@ import com.msa4meerkatgram.domain.auth.responses.AuthRes;
 import com.msa4meerkatgram.domain.user.entities.User;
 import com.msa4meerkatgram.domain.user.mapper.UserMapper;
 import com.msa4meerkatgram.domain.user.responses.UserRes;
+import com.msa4meerkatgram.global.errors.custom.InvalidTokenException;
 import com.msa4meerkatgram.global.errors.custom.NotRegisteredException;
 import com.msa4meerkatgram.global.security.cookie.CookieManager;
 import com.msa4meerkatgram.global.security.jwt.JwtConfig;
 import com.msa4meerkatgram.global.security.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,13 @@ public class AuthService {
     private final CookieManager cookieManager;
     private final JwtConfig jwtConfig;
 
+    /**
+     * 액세스토큰 및 리프래시토큰 생성 후, 리프래시 토큰 DB와 Cookie에 저장, AuthRes로 반환
+     * @param response HttpServletResponse
+     * @param loginReq LoginReq
+     * @return AuthRes
+     */
+
     public AuthRes login(HttpServletResponse response, LoginReq loginReq) {
         // 유저정보 획득
         User user =  userMapper.findByEmail(loginReq.email());
@@ -33,6 +44,33 @@ public class AuthService {
         }
         // 비밀번호 체크
 
+        return this.generateAuthentication(response, user);
+    }
+
+    public AuthRes reissue(HttpServletRequest request, HttpServletResponse response) {
+        // 리프래시 토큰 획득
+        Optional<String> refreshTokenOptional = jwtProvider.extractRefreshToken(request);
+        if(refreshTokenOptional.isEmpty()) {
+            throw new InvalidTokenException("토큰이 없습니다");
+        }
+        String extractRefreshToken = refreshTokenOptional.get();
+
+        long id = Long.parseLong(jwtProvider.extractClaims(extractRefreshToken).getSubject());
+
+        // 유저 획득
+        User user = userMapper.findByPk(id);
+
+        if(user == null) {
+            throw new InvalidTokenException("유효하지 않은 회원의 토큰입니다");
+        }
+        // DB의 refresh토큰과 request에서 추출한 refresh 토큰이 같은지 검증
+        if(!user.getRefreshToken().equals(extractRefreshToken)) {
+            throw new InvalidTokenException("토큰이 일치하지 않습니다");
+        }
+        return this.generateAuthentication(response, user);
+    }
+
+    private AuthRes generateAuthentication(HttpServletResponse response, User user) {
         // 토큰 생성
         String newAccessToken = jwtProvider.generateAccessToken(user);
         String newRefreshToken = jwtProvider.generateFreshToken(user);
@@ -52,13 +90,13 @@ public class AuthService {
         return AuthRes.builder()
                 .accessToken(newAccessToken)
                 .user(
-                    UserRes.builder()
-                            .email(user.getEmail())
-                            .createdAt(user.getCreatedAt())
-                            .nick(user.getNick())
-                            .role(user.getRole())
-                            .profile(user.getProfile())
-                            .build()
+                        UserRes.builder()
+                                .email(user.getEmail())
+                                .createdAt(user.getCreatedAt())
+                                .nick(user.getNick())
+                                .role(user.getRole())
+                                .profile(user.getProfile())
+                                .build()
                 )
                 .build();
     }
