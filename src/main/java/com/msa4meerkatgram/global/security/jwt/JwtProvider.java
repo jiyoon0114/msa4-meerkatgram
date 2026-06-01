@@ -60,6 +60,16 @@ public class JwtProvider {
         return cookieManager.getCookie(request, jwtConfig.refreshTokenCookieName())
                 .map(Cookie::getValue);
     }
+    // 쿠키에서 엑세스 토큰 추출
+    public Optional<String> extractAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(jwtConfig.headerKey());
+
+        if(bearerToken == null || !bearerToken.startsWith(jwtConfig.scheme())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(bearerToken.substring(jwtConfig.scheme().length()).trim());
+    }
 
     // 토큰 검증 및 클래임 추출
     // Claims -> JWT payload에 들어 있는 정보 묶음

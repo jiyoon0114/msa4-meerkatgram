@@ -4,11 +4,13 @@ import com.msa4meerkatgram.domain.auth.requsts.LoginReq;
 import com.msa4meerkatgram.domain.auth.responses.AuthRes;
 import com.msa4meerkatgram.domain.auth.services.AuthService;
 import com.msa4meerkatgram.global.responses.GlobalRes;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +48,22 @@ public class AuthController {
                         .messsage("토큰 재발급 완료")
                         .data(authService.reissue(request,response))
                         .build()
+        );
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<GlobalRes<String>> logout(
+        HttpServletResponse response,
+        // Security에서 분해한 토큰의 claims를 가져와서 쓰기
+        @AuthenticationPrincipal Claims claims
+        ) {
+        authService.logout(response, Long.parseLong(claims.getSubject()));
+
+        return ResponseEntity.status(200).body(
+            GlobalRes.<String>builder()
+                    .code("00")
+                    .messsage("로그아웃 완료")
+                    .build()
         );
     }
 }
