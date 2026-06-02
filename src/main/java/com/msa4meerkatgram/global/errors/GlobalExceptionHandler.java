@@ -1,5 +1,6 @@
 package com.msa4meerkatgram.global.errors;
 
+import com.msa4meerkatgram.global.errors.custom.DeletedRecordException;
 import com.msa4meerkatgram.global.errors.custom.InvalidTokenException;
 import com.msa4meerkatgram.global.errors.custom.NotRegisteredException;
 import com.msa4meerkatgram.global.responses.GlobalRes;
@@ -57,11 +58,22 @@ public class GlobalExceptionHandler {
 
     // 클라이언트 토큰 만료
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<GlobalRes<String>> invalidTokenHandle(NotRegisteredException e) {
+    public ResponseEntity<GlobalRes<String>> invalidTokenHandle(InvalidTokenException e) {
         return ResponseEntity.status(401).body(
                 GlobalRes.<String>builder()
                         .code("E04")
                         .messsage("토큰 이상")
+                        .data(e.getMessage())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(DeletedRecordException.class)
+    public ResponseEntity<GlobalRes<String>> deletedRecordHandler(DeletedRecordException e) {
+        return ResponseEntity.status(404).body(
+                GlobalRes.<String>builder()
+                        .code("E10")
+                        .messsage("DELETED_RECORD_ERROR")
                         .data(e.getMessage())
                         .build()
         );

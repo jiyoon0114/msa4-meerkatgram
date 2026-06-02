@@ -66,7 +66,7 @@ public class AuthService {
         // 유저 획득
         User user = userMapper.findByPk(id);
 
-        if(user == null) {
+        if(user == null || user.getRefreshToken() == null) {
             throw new InvalidTokenException("유효하지 않은 회원의 토큰입니다");
         }
         // DB의 refresh토큰과 request에서 추출한 refresh 토큰이 같은지 검증
