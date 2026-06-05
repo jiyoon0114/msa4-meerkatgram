@@ -39,9 +39,9 @@ public class JwtProvider {
     }
 
     // time to limit = ttl
+    // Token 발급하기
     private String generateToken(User user, long ttl) {
         Date now = new Date();
-
         return Jwts.builder()
                 .header()
                 .type(jwtConfig.type()) // 토큰 유형 설정

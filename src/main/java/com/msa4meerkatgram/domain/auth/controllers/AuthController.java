@@ -28,7 +28,7 @@ public class AuthController {
             @Valid @RequestBody LoginReq loginReq
             // Response할때 필요한 정보를 저장해 주는 객체
             , HttpServletResponse response
-            ) {
+        ) {
         return ResponseEntity.status(200).body(
                 GlobalRes.<AuthRes>builder()
                         .code("00")

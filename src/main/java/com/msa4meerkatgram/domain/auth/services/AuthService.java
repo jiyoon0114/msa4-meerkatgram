@@ -4,6 +4,7 @@ import com.msa4meerkatgram.domain.auth.mapper.AuthMapper;
 import com.msa4meerkatgram.domain.auth.requsts.LoginReq;
 import com.msa4meerkatgram.domain.auth.requsts.RegistrationReq;
 import com.msa4meerkatgram.domain.auth.responses.AuthRes;
+import com.msa4meerkatgram.domain.post.mapper.PostMapper;
 import com.msa4meerkatgram.domain.user.entities.User;
 import com.msa4meerkatgram.domain.user.mapper.UserMapper;
 import com.msa4meerkatgram.domain.user.responses.UserRes;
@@ -34,6 +35,7 @@ public class AuthService {
     private final CookieManager cookieManager;
     private final JwtConfig jwtConfig;
     private final PasswordEncoder passwordEncoder;
+    private final PostMapper postMapper;
 
     /**
      * 액세스토큰 및 리프래시토큰 생성 후, 리프래시 토큰 DB와 Cookie에 저장, AuthRes로 반환
@@ -81,6 +83,9 @@ public class AuthService {
     }
 
     private AuthRes generateAuthentication(HttpServletResponse response, User user) {
+        // 작성 게시글 수 획득
+        long countPosts = postMapper.countPostByUserId(user.getId());
+
         // 토큰 생성
         String newAccessToken = jwtProvider.generateAccessToken(user);
         String newRefreshToken = jwtProvider.generateFreshToken(user);
@@ -90,17 +95,20 @@ public class AuthService {
 
         // 리프래시 토큰을 Response의 Cookie에 저장함
         cookieManager.setCookie(
-                response
-                , jwtConfig.refreshTokenCookieName()
-                , newRefreshToken
-                , jwtConfig.refreshTokenCookieExpiry()
-                , jwtConfig.reissUri());
+            response
+            , jwtConfig.refreshTokenCookieName()
+            , newRefreshToken
+            , jwtConfig.refreshTokenCookieExpiry()
+            , jwtConfig.reissUri()
+        );
 
         // 리턴
         return AuthRes.builder()
                 .accessToken(newAccessToken)
                 .user(
                         UserRes.builder()
+                                .countPosts(countPosts)
+                                .id(user.getId())
                                 .email(user.getEmail())
                                 .createdAt(user.getCreatedAt())
                                 .nick(user.getNick())

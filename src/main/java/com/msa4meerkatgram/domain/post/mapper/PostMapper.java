@@ -10,4 +10,5 @@ public interface PostMapper {
     List<Post> getPaination(int limit, int offset);
     long getTotal();
     Post findbyPK(long id);
+    long countPostByUserId(long userId);
 }
