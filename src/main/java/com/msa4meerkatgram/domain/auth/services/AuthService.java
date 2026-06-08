@@ -82,6 +82,7 @@ public class AuthService {
         return this.generateAuthentication(response, user);
     }
 
+    // 로그인 or 토큰 재발급 성공 시 공통으로 사용하는 private 메서드
     private AuthRes generateAuthentication(HttpServletResponse response, User user) {
         // 작성 게시글 수 획득
         long countPosts = postMapper.countPostByUserId(user.getId());
@@ -119,12 +120,13 @@ public class AuthService {
                 .build();
     }
 
-    // 어떤 오류가 발생했을때 rollback이 발생?
+    // Exception이 발생했을때 rollback이 발생
     @Transactional(rollbackFor = Exception.class)
     public void logout(HttpServletResponse response, long id) {
         // 유저 정보 획득
         User user = userMapper.findByPk(id);
 
+        // 일치한 user가 없음
         if(user == null) {
             throw new InvalidTokenException("유효하지 않은 회원의 토큰입니다.");
         }
@@ -132,7 +134,7 @@ public class AuthService {
         // DB에 저장한 리프래시 토큰 파기
         authMapper.updateRefreshToken(id, null);
 
-        // Cookie에 저장한 리프래시 토큰 파기
+        // Cookie에 저장한 리프래시 토큰 파기 -> maxAge = 0 -> 받자마자 쿠키 없어짐
         cookieManager.setCookie(response, jwtConfig.refreshTokenCookieName(), null, 0, jwtConfig.reissUri());
     }
 

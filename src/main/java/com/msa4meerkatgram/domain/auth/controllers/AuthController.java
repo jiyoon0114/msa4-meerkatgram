@@ -55,7 +55,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<GlobalRes<String>> logout(
         HttpServletResponse response,
-        // Security에서 분해한 토큰의 claims를 가져와서 쓰기
+        // Spring Security에 등록된 현재 인증 사용자의 principal을 가져옴
         @AuthenticationPrincipal Claims claims
         ) {
         authService.logout(response, Long.parseLong(claims.getSubject()));

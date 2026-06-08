@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    // Spring Security가 애플리케이션 요청 앞단에 보안 필터 체인을 붙이는 라이브러리 -> SecurityConfiguration가 그 동작을 커스터마이징
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // jjwt 라이브러리 추가
     implementation 'io.jsonwebtoken:jjwt:0.12.6'

@@ -34,7 +34,7 @@ public class CookieManager {
     }
 
     // 쿠키 생성 메소드
-    // HttpServletResponse: 클라이언트에게 Response할 HTTP 응답 객체
+    // 쿠키를 생성하고 response 헤더에 만든 쿠키 넣어주기
     public void setCookie(HttpServletResponse response, String name, String value, int maxAge, String path) { {
         Cookie cookie = new Cookie(name, value); // 해당 이름과 값으로 쿠키 인스턴스 생성
         // 쿠키가 유효한 경로를 설정 -> 특정 경로(예: /api)를 넣으면 브라우저가 그 경로로 요청할 때만 이 쿠키를 서버로 보냅니다.
