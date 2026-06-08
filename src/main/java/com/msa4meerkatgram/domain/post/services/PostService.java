@@ -3,6 +3,7 @@ package com.msa4meerkatgram.domain.post.services;
 import com.msa4meerkatgram.domain.post.entities.Post;
 import com.msa4meerkatgram.domain.post.mapper.PostMapper;
 import com.msa4meerkatgram.domain.post.requests.PostIndexReq;
+import com.msa4meerkatgram.domain.post.requests.PostUploadReq;
 import com.msa4meerkatgram.domain.post.responses.PostIndexRes;
 import com.msa4meerkatgram.global.errors.custom.DeletedRecordException;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,20 @@ public class PostService {
             throw new DeletedRecordException("이미 삭제된 게시글입니다");
         }
         return post;
+    }
+
+    public Post upload(long id, PostUploadReq postUploadReq) {
+        Post post = Post.builder()
+                .image(postUploadReq.image())
+                .content(postUploadReq.content())
+                .userId(id)
+                .build();
+        int result = postMapper.upload(post);
+
+        if(result < 1) {
+            throw new RuntimeException("post upload를 실패했습니다");
+        }
+
+        return postMapper.findbyPK(post.getId());
     }
 }

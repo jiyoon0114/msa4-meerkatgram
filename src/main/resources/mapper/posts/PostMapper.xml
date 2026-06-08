@@ -49,4 +49,13 @@
             deleted_at IS NULL
             AND user_id = #{userId}
     </select>
+
+    <insert id="upload"
+    parameterType="Post"
+    useGeneratedKeys="true"
+    keyProperty="id"
+    >
+        INSERT INTO posts (user_id, content, image)
+        VALUES (#{userId}, #{content}, #{image})
+    </insert>
 </mapper>
