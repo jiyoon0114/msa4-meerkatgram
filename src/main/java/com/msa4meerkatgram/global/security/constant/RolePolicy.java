@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum RolePolicy {
 //    private ProviderPolicy NONE = ProviderPolicy("NONE");을 단축으로 세팅
     NORMAL("NONE"),
-    SUPER("KAKAO");
+    SUPER("SUPER");
 
     private final String role;
 
