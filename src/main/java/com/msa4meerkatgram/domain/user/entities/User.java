@@ -28,12 +28,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // pk 자동 생성 전략 설정, GenerationType.IDENTITY가 auto increment
     @Column(name = "id", columnDefinition = "BIGINT UNSIGNED") // DB에서 쓰는 칼럼명, DB 데이터타입 매핑
-    private long id;
+    private Long id;
 
     @Column(name = "email", unique = true, nullable = false, length = 100)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "nickname", nullable = false, length = 20)
@@ -52,7 +52,7 @@ public class User {
     @Column(name = "profile", nullable = false, length = 100)
     private String profile;
 
-    @Column(name = "refresh_token", nullable = true, length = 255)
+    @Column(name = "refresh_token")
     private String refreshToken;
 
     @CreatedDate // 생성 시 자동으로 현재 시간 입력
@@ -63,6 +63,6 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "deleted_at", nullable = true)
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 }
