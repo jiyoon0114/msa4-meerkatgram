@@ -47,6 +47,7 @@ public class Post {
     // 현재 작성하는 entity 기준을 앞으로 (Post가 n이니 Many)
     // 이 연관관계에서는 연관관계를 쓰겠다
     @ManyToOne(fetch = FetchType.LAZY)
+    // 외래키를 가지고 있는 주인 컬럼인 경우 JoinColumn 어노테이션을 사용
     @JoinColumn(
             name = "user_id",
             insertable = true,
