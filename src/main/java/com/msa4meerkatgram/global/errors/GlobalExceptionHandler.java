@@ -1,7 +1,8 @@
 package com.msa4meerkatgram.global.errors;
 
+import com.msa4meerkatgram.global.errors.constant.CustomErrorCode;
 import com.msa4meerkatgram.global.errors.custom.*;
-import com.msa4meerkatgram.global.responses.GlobalRes;
+import com.msa4meerkatgram.global.responses.GlobalErrorRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -20,90 +21,60 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private ResponseEntity<GlobalErrorRes> generateErrorResponse(CustomErrorCode customErrorCode) {
+        return ResponseEntity.status(customErrorCode.getHttpStatus()).body(
+                GlobalErrorRes.from(customErrorCode.getCode(), customErrorCode.name())
+        );
+    }
 
     // 클라이언트가 보낸 로그인이 양식에 맞지 않음
     @ExceptionHandler(NotRegisteredException.class)
-    public ResponseEntity<GlobalRes<String>> notRegisteredException(NotRegisteredException e) {
-        return ResponseEntity.status(401).body(
-                GlobalRes.<String>builder()
-                        .code("E01")
-                        .messsage("로그인 에러")
-                        .data(e.getMessage())
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> notRegisteredException(NotRegisteredException e) {
+        log.debug(CustomErrorCode.NOT_REGISTERED_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.NOT_REGISTERED_ERROR);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<GlobalRes<String>> authenticationHandle(AuthenticationException e) {
-        return ResponseEntity.status(401).body(
-                GlobalRes.<String>builder()
-                        .code("E02")
-                        .messsage("UNAUTHENTICATED_ERROR")
-                        .data("로그인이 필요한 서비스입니다.")
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> authenticationHandle(AuthenticationException e) {
+        log.debug(CustomErrorCode.UNAUTHENTICATED_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.UNAUTHENTICATED_ERROR);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<GlobalRes<String>> accessDeniedHandle(AccessDeniedException e) {
-        return ResponseEntity.status(403).body(
-                GlobalRes.<String>builder()
-                        .code("E03")
-                        .messsage("UNAUTHORIZED_ERROR")
-                        .data("권한이 부족합니다")
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> accessDeniedHandle(AccessDeniedException e) {
+        log.debug(CustomErrorCode.UNAUTHORIZED_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.UNAUTHORIZED_ERROR);
     }
 
     // 클라이언트 토큰 만료
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<GlobalRes<String>> invalidTokenHandle(InvalidTokenException e) {
-        return ResponseEntity.status(401).body(
-                GlobalRes.<String>builder()
-                        .code("E04")
-                        .messsage("토큰 이상")
-                        .data(e.getMessage())
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> invalidTokenHandle(InvalidTokenException e) {
+        log.debug(CustomErrorCode.INVALID_TOKEN_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.INVALID_TOKEN_ERROR);
     }
 
     @ExceptionHandler(DeletedRecordException.class)
-    public ResponseEntity<GlobalRes<String>> deletedRecordHandler(DeletedRecordException e) {
-        return ResponseEntity.status(404).body(
-                GlobalRes.<String>builder()
-                        .code("E10")
-                        .messsage("DELETED_RECORD_ERROR")
-                        .data(e.getMessage())
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> deletedRecordHandler(DeletedRecordException e) {
+        log.debug(CustomErrorCode.NOT_FOUND_DATA_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.NOT_FOUND_DATA_ERROR);
     }
 
     @ExceptionHandler(DuplicatedRecordException.class)
-    public ResponseEntity<GlobalRes<String>> duplicatedRecordHandle(DuplicatedRecordException e) {
-        return ResponseEntity.status(404).body(
-                GlobalRes.<String>builder()
-                        .code("E11")
-                        .messsage("DUPLICATED_RECORD_ERROR")
-                        .data(e.getMessage())
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> duplicatedRecordHandle(DuplicatedRecordException e) {
+        log.debug(CustomErrorCode.DUPLICATED_DATA_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.DUPLICATED_DATA_ERROR);
     }
 
     // 클라이언트가 보낸 하나의 타입 파라미터가 미스 매치됐을때 실행됨
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<GlobalRes<String>> methodArgumentTypeMismatchHandle(MethodArgumentTypeMismatchException e) {
-        return ResponseEntity.status(400).body(
-            GlobalRes.<String>builder()
-                .code("E21")
-                .messsage("요청 파라미터에 이상이 있습니다")
-                .data(String.format("%s : 필드를 확인해 주세요.", e.getName()))
-                .build()
-        );
+    public ResponseEntity<GlobalErrorRes> methodArgumentTypeMismatchHandle(MethodArgumentTypeMismatchException e) {
+        log.debug(CustomErrorCode.INVALID_PARAMETER_ERROR.name(), String.format("%s : 필드를 확인해 주세요", e.getName()));
+        return this.generateErrorResponse(CustomErrorCode.INVALID_PARAMETER_ERROR);
     }
 
     // 클라이언트가 보낸 복수의 파라미터가 미스매차됨
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<GlobalRes<Map<String, String>>> methodArgumentNotValidHandle(MethodArgumentNotValidException e) {
+    public ResponseEntity<GlobalErrorRes> methodArgumentNotValidHandle(MethodArgumentNotValidException e) {
         Map<String, String> errors = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -113,48 +84,25 @@ public class GlobalExceptionHandler {
                         (existing, replacement) -> existing // 중복 필드가 있을 경우 기존 값 유지
                 ));
 
-        return ResponseEntity.status(400).body(
-                GlobalRes.<Map<String, String>>builder()
-                        .code("E21")
-                        .messsage("요청 파라미터에 이상이 있습니다.")
-                        .data(errors)
-                        .build()
-        );
+        log.debug(CustomErrorCode.INVALID_PARAMETER_ERROR.name(), errors);
+        return this.generateErrorResponse(CustomErrorCode.INVALID_PARAMETER_ERROR);
     }
 
     @ExceptionHandler(FileManagedException.class)
-    public ResponseEntity<GlobalRes<String>> fileManagedHandle(FileManagedException e) {
-        log.error("파일 업로드 에러:", e);
-        return ResponseEntity.status(500).body(
-                GlobalRes.<String>builder()
-                        .code("E40")
-                        .messsage("파일 업로드 실패")
-                        .data(e.getMessage())
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> fileManagedHandle(FileManagedException e) {
+        log.debug(CustomErrorCode.FILE_MANAGED_ERROR.name(), e);
+        return this.generateErrorResponse(CustomErrorCode.FILE_MANAGED_ERROR);
     }
 
     @ExceptionHandler(SQLException.class)
-    public ResponseEntity<GlobalRes<String>> SQLHandle(SQLException e) {
-        log.error("DB 에러: ", e);
-        return ResponseEntity.status(500).body(
-                GlobalRes.<String>builder()
-                        .code("E80")
-                        .messsage("DB 에러")
-                        .data("현재 서비스 이용이 불가합니다 잠시후 다시 시도해주세요")
-                        .build()
-        );
+    public ResponseEntity<GlobalErrorRes> SQLHandle(SQLException e) {
+        log.error("DB 에러", e);
+        return this.generateErrorResponse(CustomErrorCode.DB_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<GlobalRes<String>> otherHandle(Exception e) {
-        log.error("시스템 에러: ", e);
-        return ResponseEntity.status(500).body(
-            GlobalRes.<String>builder()
-                .code("E99")
-                .messsage("시스템 에러")
-                .data("현재 서비스 이용이 불가합니다 잠시후 다시 시도해주세요")
-                .build()
-        );
+    public ResponseEntity<GlobalErrorRes> otherHandle(Exception e) {
+        log.error("시스템 에러", e);
+        return this.generateErrorResponse(CustomErrorCode.SYSTEM_ERROR);
     }
 }
