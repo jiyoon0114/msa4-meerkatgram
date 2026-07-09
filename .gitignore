@@ -6,6 +6,8 @@ build/
 !**/src/test/**/build/
 application.yaml
 storage/
+/AGENTS.md
+
 
 ### STS ###
 .apt_generated
