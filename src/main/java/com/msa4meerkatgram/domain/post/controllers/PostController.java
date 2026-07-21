@@ -1,10 +1,15 @@
 package com.msa4meerkatgram.domain.post.controllers;
 
-import com.msa4meerkatgram.domain.post.entities.Post;
 import com.msa4meerkatgram.domain.post.requests.PostIndexReq;
 import com.msa4meerkatgram.domain.post.responses.PostIndexRes;
+import com.msa4meerkatgram.domain.post.responses.PostWithUserRes;
 import com.msa4meerkatgram.domain.post.services.PostService;
+import com.msa4meerkatgram.global.config.openapi.CustomApiResponse;
 import com.msa4meerkatgram.global.responses.GlobalRes;
+import com.msa4meerkatgram.global.responses.constant.CustomResponseCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "게시글 API", description = "게시글 관련 API")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -20,28 +26,29 @@ public class PostController {
 
     private final PostService postService;
 
+    @Operation(summary = "게시물 조회")
+    @CustomApiResponse(value = {
+            CustomResponseCode.INVALID_PARAMETER_ERROR,
+            CustomResponseCode.DB_ERROR,
+            CustomResponseCode.SYSTEM_ERROR
+    })
     @GetMapping("/posts")
     public ResponseEntity<GlobalRes<PostIndexRes>> index(PostIndexReq postIndexReq) {
-        PostIndexRes postIndexRes = postService.index(postIndexReq);
-        return ResponseEntity.status(200).body(
-            GlobalRes.<PostIndexRes>builder()
-                .code("00")
-                .messsage("정상처리")
-                .data(postIndexRes)
-                .build()
-        );
+        return ResponseEntity.ok(GlobalRes.success(postService.index(postIndexReq)));
     }
+
+    @Operation(summary = "게시물 상세 조회")
+    @CustomApiResponse(value = {
+            CustomResponseCode.INVALID_TOKEN_ERROR,
+            CustomResponseCode.INVALID_PARAMETER_ERROR,
+            CustomResponseCode.UNAUTHENTICATED_ERROR,
+            CustomResponseCode.DB_ERROR,
+            CustomResponseCode.SYSTEM_ERROR
+    })
     @GetMapping("/posts/{id}")
-    public ResponseEntity<GlobalRes<Post>> show(
-        @Min(value = 1, message = "1이상 숫자만 허용합니다") @PathVariable long id
+    public ResponseEntity<GlobalRes<PostWithUserRes>> show(
+        @Parameter(description = "게시글 고유 번호", example = "1") @Min(value = 1, message = "1이상 숫자만 허용합니다") @PathVariable long id
     ) {
-        Post result = postService.show(id);
-        return ResponseEntity.status(200).body(
-                GlobalRes.<Post>builder()
-                        .code("00")
-                        .messsage("게시글 상세 정상 처리")
-                        .data(result)
-                        .build()
-        );
+        return ResponseEntity.ok(GlobalRes.success(postService.show(id)));
     }
 }

@@ -9,5 +9,13 @@ import java.util.List;
 public record PostIndexRes(
         long total,
         boolean lastPage,
-        List<Post> posts
-) {}
+        List<PostWithUserRes> posts
+) {
+    public static PostIndexRes from(long total, boolean lastPage, List<Post> posts) {
+        return new PostIndexRes(
+                total,
+                lastPage,
+                posts.stream().map(PostWithUserRes::from).toList()
+        );
+    }
+}

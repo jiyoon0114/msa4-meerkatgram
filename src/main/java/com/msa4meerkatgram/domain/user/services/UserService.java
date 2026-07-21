@@ -1,6 +1,5 @@
 package com.msa4meerkatgram.domain.user.services;
 
-import com.msa4meerkatgram.domain.user.mapper.UserMapper;
 import com.msa4meerkatgram.global.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,5 +8,4 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final JwtProvider jwtProvider;
-    private final UserMapper userMapper;
 }
